@@ -6,12 +6,15 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
 import com.ys.customview.R;
 import com.ys.customview.exception.NoDetermineSizeException;
 import com.ys.customview.util.DpSpUtil;
+
+import java.util.Calendar;
 
 /**
  * Describe:
@@ -22,12 +25,13 @@ public class WatchBoard extends View {
 
     private Context context;
 
+    private float mRadius; //外圆半径
     private float mPadding;
     private float mTextSize;
     private float mHourPointWidth;
     private float mMinutePointWidth;
     private float mSecondPointWidth;
-    private float mPointRadius;
+    private float mPointRadius;// 指针圆角
     private float mPointEndLength;
 
     private int mColorLong;
@@ -81,8 +85,8 @@ public class WatchBoard extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        mPointRadius = (Math.min(w,h)-mPadding)/2;
-        mPointEndLength = mPointRadius/6; //尾部指针默认为半径的六分之一
+        mRadius = (Math.min(w,h)-mPadding)/2;
+        mPointEndLength = mRadius/6; //尾部指针默认为半径的六分之一
     }
 
     @Override
@@ -94,15 +98,19 @@ public class WatchBoard extends View {
         //绘制外边框的圆
         mPaint.setColor(Color.WHITE);
         mPaint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(0,0,mPointRadius,mPaint);
-
+        canvas.drawCircle(0,0,mRadius,mPaint);
+        //绘制刻度盘
         paintScale(canvas);
-
+        //绘制指针
+        paintPointer(canvas);
         canvas.restore();
+        //刷新
+        postInvalidateDelayed(1000);
     }
 
     //绘制刻度盘
     private void paintScale(Canvas canvas){
+        canvas.save();
         mPaint.setStrokeWidth(DpSpUtil.dp2px(context,1));
         int lineWidth=0;
         for(int i = 0;i<60;i++){
@@ -118,7 +126,7 @@ public class WatchBoard extends View {
                 canvas.save();
                 //将画布沿着现在画布的y轴负方向移动靠近圆心，到离线条5dp
                 // (textBounds.bottom-textBounds.top) 的位置(大概是为了防止字体比给的5dp还大，被挡住)
-                canvas.translate(0,-mPointRadius+DpSpUtil.dp2px(context, 5)+lineWidth+(textBounds.bottom-textBounds.top));
+                canvas.translate(0,-mRadius+DpSpUtil.dp2px(context, 5)+lineWidth+(textBounds.bottom-textBounds.top));
                 //然后反方向旋转回去，此刻canvas的坐标原点，作为textView的中心位置
                 canvas.rotate(-6 * i);
                 mPaint.setStyle(Paint.Style.FILL);
@@ -137,10 +145,34 @@ public class WatchBoard extends View {
                 mPaint.setStrokeWidth(DpSpUtil.dp2px(context, 1));
             }
             //与圆形边距为10dp
-            canvas.drawLine(0, -mPointRadius+ DpSpUtil.dp2px(context, 10),0,-mPointRadius+ DpSpUtil.dp2px(context, 10)+lineWidth,mPaint);
+            canvas.drawLine(0, -mRadius+ DpSpUtil.dp2px(context, 10),0,-mRadius+ DpSpUtil.dp2px(context, 10)+lineWidth,mPaint);
             canvas.rotate(6);
         }
-        //canvas.restore();
+        canvas.restore();
+    }
+
+    //绘制指针
+    private void paintPointer(Canvas canvas){
+        //获取当前时间
+        Calendar cal = Calendar.getInstance();
+        int hourAngle = cal.get(Calendar.HOUR_OF_DAY)*30;
+        int minAngle = cal.get(Calendar.MINUTE)*6;
+        int secAngle = cal.get(Calendar.MINUTE)*6;
+        //绘制时针
+        canvas.save();
+        canvas.rotate(hourAngle);
+        RectF rectFHour = new RectF(-mHourPointWidth / 2, -mRadius * 3 / 5, mHourPointWidth / 2, mPointEndLength);
+        mPaint.setColor(mHourPointColor); //设置指针颜色
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(mHourPointWidth); //设置边界宽度
+        canvas.drawRoundRect(rectFHour, mPointRadius, mPointRadius, mPaint); //绘制时针
+
+        mPaint.setColor(Color.BLACK);
+        canvas.drawRect(0,0,60,60,mPaint);
+        canvas.restore();
+
+        mPaint.setColor(Color.BLACK);
+        canvas.drawRect(-20,-20,20,20,mPaint);
     }
 
     private void init() {
@@ -161,7 +193,7 @@ public class WatchBoard extends View {
             mHourPointWidth = array.getDimension(R.styleable.WatchBoard_wb_hour_pointer_width, DpSpUtil.dp2px(context, 5));
             mMinutePointWidth = array.getDimension(R.styleable.WatchBoard_wb_minute_pointer_width, DpSpUtil.dp2px(context, 3));
             mSecondPointWidth = array.getDimension(R.styleable.WatchBoard_wb_second_pointer_width, DpSpUtil.dp2px(context, 2));
-            mPointRadius = (int) array.getDimension(R.styleable.WatchBoard_wb_pointer_corner_radius, DpSpUtil.dp2px(context, 10));
+            mPointRadius = array.getDimension(R.styleable.WatchBoard_wb_pointer_corner_radius, DpSpUtil.dp2px(context, 10));
             mPointEndLength = array.getDimension(R.styleable.WatchBoard_wb_pointer_end_length, DpSpUtil.dp2px(context, 10));
 
             mColorLong = array.getColor(R.styleable.WatchBoard_wb_scale_long_color, Color.argb(255, 0, 0, 0));
@@ -176,7 +208,7 @@ public class WatchBoard extends View {
             mHourPointWidth = DpSpUtil.dp2px(context,5);
             mMinutePointWidth = DpSpUtil.dp2px(context,3);
             mSecondPointWidth =DpSpUtil.dp2px(context,2);
-            mPointRadius = (int) DpSpUtil.dp2px(context,10);
+            mPointRadius = DpSpUtil.dp2px(context,10);
             mPointEndLength = DpSpUtil.dp2px(context,10);
 
             mColorLong = Color.argb(225, 0, 0, 0);
