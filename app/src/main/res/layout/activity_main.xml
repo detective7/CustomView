@@ -10,7 +10,7 @@
 
     <com.ys.customview.view.WatchBoard
         android:layout_centerInParent="true"
-        android:layout_width="200dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:wb_text_size="18sp"/>
 </RelativeLayout>

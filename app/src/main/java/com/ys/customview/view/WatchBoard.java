@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -95,6 +96,8 @@ public class WatchBoard extends View {
         mPaint.setStyle(Paint.Style.FILL);
         canvas.drawCircle(0,0,mPointRadius,mPaint);
 
+        paintScale(canvas);
+
         canvas.restore();
     }
 
@@ -107,6 +110,27 @@ public class WatchBoard extends View {
                 mPaint.setStrokeWidth(DpSpUtil.dp2px(context, 1.5f));
                 mPaint.setColor(mColorLong);
                 lineWidth = 40;
+                String text = ((i / 5) == 0 ? 12 : (i / 5)) + "";
+                Rect textBounds = new Rect();
+                //根据字符串取最小textView的宽高,放到textBounds里
+                mPaint.getTextBounds(text,0,text.length(),textBounds);
+                //先保存用来画刻度线条的canvas
+                canvas.save();
+                //将画布沿着现在画布的y轴负方向移动靠近圆心，到离线条5dp
+                // (textBounds.bottom-textBounds.top) 的位置(大概是为了防止字体比给的5dp还大，被挡住)
+                canvas.translate(0,-mPointRadius+DpSpUtil.dp2px(context, 5)+lineWidth+(textBounds.bottom-textBounds.top));
+                //然后反方向旋转回去，此刻canvas的坐标原点，作为textView的中心位置
+                canvas.rotate(-6 * i);
+                mPaint.setStyle(Paint.Style.FILL);
+                //测试框
+//                mPaint.setColor(Color.BLUE);
+//                canvas.drawRect(0,0,50,50,mPaint);
+                //开始绘制数字
+                mPaint.setColor(Color.BLACK);
+                mPaint.setTextSize(mTextSize);
+                canvas.drawText(text,-(textBounds.right-textBounds.left)/2,(textBounds.bottom-textBounds.top)/2,mPaint);
+                //回复旋转的画布
+                canvas.restore();
             }else { //非整点
                 lineWidth = 30;
                 mPaint.setColor(mColorShort);
@@ -115,8 +139,8 @@ public class WatchBoard extends View {
             //与圆形边距为10dp
             canvas.drawLine(0, -mPointRadius+ DpSpUtil.dp2px(context, 10),0,-mPointRadius+ DpSpUtil.dp2px(context, 10)+lineWidth,mPaint);
             canvas.rotate(6);
-            canvas.save()
         }
+        //canvas.restore();
     }
 
     private void init() {
