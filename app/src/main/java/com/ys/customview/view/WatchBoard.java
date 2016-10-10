@@ -103,9 +103,17 @@ public class WatchBoard extends View {
         paintScale(canvas);
         //绘制指针
         paintPointer(canvas);
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(0,0,20,mPaint);
         canvas.restore();
         //刷新
         postInvalidateDelayed(1000);
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                postInvalidateDelayed(1000);
+//            }
+//        }).start();
     }
 
     //绘制刻度盘
@@ -155,9 +163,23 @@ public class WatchBoard extends View {
     private void paintPointer(Canvas canvas){
         //获取当前时间
         Calendar cal = Calendar.getInstance();
-        int hourAngle = cal.get(Calendar.HOUR_OF_DAY)*30;
-        int minAngle = cal.get(Calendar.MINUTE)*6;
-        int secAngle = cal.get(Calendar.MINUTE)*6;
+        int hour = cal.get(Calendar.HOUR_OF_DAY);
+        int min = cal.get(Calendar.MINUTE);
+        int sec = cal.get(Calendar.SECOND);
+        Float hourAngle=0f;
+        Float minAngle=0f;
+        if(min!=0) {
+            hourAngle = hour * 30 + 0.5f*min;
+        }else{
+            hourAngle =  hour * 30.0f;
+        }
+        if(sec!=0){
+            minAngle = min*6+0.1f*sec;
+        }else {
+            minAngle = min*6.0f;
+        }
+        int secAngle = sec*6;
+        //Log.d("abc",hourAngle+"   "+minAngle+"   "+secAngle);
         //绘制时针
         canvas.save();
         canvas.rotate(hourAngle);
@@ -166,13 +188,26 @@ public class WatchBoard extends View {
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(mHourPointWidth); //设置边界宽度
         canvas.drawRoundRect(rectFHour, mPointRadius, mPointRadius, mPaint); //绘制时针
-
-        mPaint.setColor(Color.BLACK);
-        canvas.drawRect(0,0,60,60,mPaint);
         canvas.restore();
 
-        mPaint.setColor(Color.BLACK);
-        canvas.drawRect(-20,-20,20,20,mPaint);
+        canvas.save();
+        canvas.rotate(minAngle);
+        RectF rectFMinute = new RectF(-mMinutePointWidth / 2, -mRadius * 3.5f / 5, mMinutePointWidth / 2, mPointEndLength);
+        mPaint.setColor(mMinutePointColor);
+        mPaint.setStrokeWidth(mMinutePointWidth);
+        canvas.drawRoundRect(rectFMinute, mPointRadius, mPointRadius, mPaint);
+        canvas.restore();
+
+        canvas.save();
+        canvas.rotate(secAngle);
+        RectF rectFSecond = new RectF(-mSecondPointWidth / 2, -mRadius + 15, mSecondPointWidth / 2, mPointEndLength);
+        mPaint.setColor(mSecondPointColor);
+        mPaint.setStrokeWidth(mSecondPointWidth);
+        canvas.drawRoundRect(rectFSecond, mPointRadius, mPointRadius, mPaint);
+        canvas.restore();
+
+//        mPaint.setColor(Color.BLACK);
+//        canvas.drawRect(-20,-20,20,20,mPaint);
     }
 
     private void init() {
