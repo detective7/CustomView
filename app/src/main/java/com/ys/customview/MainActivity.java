@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.wave:
                 colock.setVisibility(View.GONE);
                 wave.setVisibility(View.VISIBLE);
-                wave.startAnim();
                 break;
         }
 

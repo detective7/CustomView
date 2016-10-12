@@ -19,7 +19,7 @@ public class Wave extends View {
     private Paint paint;
     private Path path;
     private int mItemWaveLength=400;
-    private int dx=0;
+    private int dx,hx;
     private ValueAnimator animator1=null,animator2=null;
     private int height,width;
 
@@ -28,33 +28,35 @@ public class Wave extends View {
         paint = new Paint();
         path = new Path();
 
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        paint.setColor(Color.GREEN);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
+        height=MeasureSpec.getSize(heightMeasureSpec);
+        width=MeasureSpec.getSize(widthMeasureSpec);
+        startAnim();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         path.reset();
-        int originY=300;
+        float originY=0;
         int halfWaveLen = mItemWaveLength/2;
-
-        path.moveTo(-mItemWaveLength+dx,originY);
-        for(int i = -mItemWaveLength;i<=getWidth()+mItemWaveLength;i+=mItemWaveLength){
+        path.moveTo(-mItemWaveLength+dx,originY+hx);
+        for(int i = -mItemWaveLength;i<=width+mItemWaveLength;i+=mItemWaveLength){
             path.rQuadTo(halfWaveLen/2,-50,halfWaveLen,0);
             path.rQuadTo(halfWaveLen/2,50,halfWaveLen,0);
         }
-        path.lineTo(getWidth(),getHeight());
-        path.lineTo(0,getHeight());
+        path.lineTo(width,height);
+        path.lineTo(0,height);
         path.close();
-
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        paint.setColor(Color.GREEN);
         canvas.drawPath(path,paint);
+//        paint.setColor(Color.RED);
+//        canvas.drawRect(0,0,width,height+top,paint);
     }
 
     public void startAnim(){
@@ -70,15 +72,13 @@ public class Wave extends View {
             }
         });
 
-        animator2 = ValueAnimator.ofInt(0,mItemWaveLength);
-        animator2.setDuration(1000);
-        animator2.setRepeatCount(ValueAnimator.INFINITE);
+        animator2 = ValueAnimator.ofInt(0,height);
+        animator2.setDuration(10000);
         animator2.setInterpolator(new LinearInterpolator());
         animator2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                dx=(int)animation.getAnimatedValue();
-                postInvalidate();
+                hx=(int)animation.getAnimatedValue();
             }
         });
         animator1.start();
