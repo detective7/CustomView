@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -55,14 +56,15 @@ public class Wave extends View {
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         paint.setColor(Color.GREEN);
         canvas.drawPath(path,paint);
-//        paint.setColor(Color.RED);
-//        canvas.drawRect(0,0,width,height+top,paint);
+        Log.e("abc",hx+"");
+
     }
 
     public void startAnim(){
         animator1 = ValueAnimator.ofInt(0,mItemWaveLength);
         animator1.setDuration(1000);
-        animator1.setRepeatCount(ValueAnimator.INFINITE);
+        //重复十次就好，因为高度只需要10秒跑完
+        animator1.setRepeatCount(10);
         animator1.setInterpolator(new LinearInterpolator());
         animator1.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -72,7 +74,7 @@ public class Wave extends View {
             }
         });
 
-        animator2 = ValueAnimator.ofInt(0,height);
+        animator2 = ValueAnimator.ofInt(0,height+30);
         animator2.setDuration(10000);
         animator2.setInterpolator(new LinearInterpolator());
         animator2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
