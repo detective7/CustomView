@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
@@ -56,8 +55,6 @@ public class Wave extends View {
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         paint.setColor(Color.GREEN);
         canvas.drawPath(path,paint);
-        Log.e("abc",hx+"");
-
     }
 
     public void startAnim(){
